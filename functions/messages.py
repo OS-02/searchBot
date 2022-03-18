@@ -119,17 +119,21 @@ def prettified_res(res, keyword, page=1):
     total_page = math.ceil(res.body["hits"]["total"]["value"]/config["params"]["search"]["step"])
 
     # table.add_row(("2022-03-18", "aSigma", "哈哈哈", "111"))
+    stack_msg = ""
     for row in res.body["hits"]["hits"]:
-        table.add_row((
-            row["_source"]["date"].split(" ")[0],
-            row["_source"]["sender"]["userName"],
-            # row["_source"]["text"],
-            f"[{row['_source']['text']}](https://t.me/nbb_love_tanaka/{row['_source']['id']})"
-            # row["_source"]["chat"]
-        ))
+        # table.add_row((
+        #     row["_source"]["date"].split(" ")[0],
+        #     row["_source"]["sender"]["userName"],
+        #     # row["_source"]["text"],
+        #     f"[{row['_source']['text']}](https://t.me/nbb_love_tanaka/{row['_source']['id']})"
+        #     # row["_source"]["chat"]
+        # ))
+        stack_msg += f"📆 {row['_source']['date'].split(' ')[0]}  --|--  👤 {row['_source']['sender']['userName']}\n" \
+                     f"🔊 [{row['_source']['text']}](https://{config['chat']}/{row['_source']['id']})\n" \
+                     f"{'-'*50}\n\n"
 
     prety_res = f"📝Total page: {total_page}\n" \
-          f"👀Page-{page} for keyword: **{keyword}**\n" \
-          f"{table}" 
+          f"👀Page-{page} for keyword: **{keyword}**\n\n" \
+          f"{stack_msg}" 
 
     return prety_res
