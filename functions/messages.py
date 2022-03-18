@@ -125,7 +125,6 @@ def prettified_res(res, keyword, page=1):
         #     row["_source"]["date"].split(" ")[0],
         #     row["_source"]["sender"]["userName"],
         #     # row["_source"]["text"],
-        #     f"[{row['_source']['text']}](https://t.me/nbb_love_tanaka/{row['_source']['id']})"
         #     # row["_source"]["chat"]
         # ))
         stack_msg += f"📆 {row['_source']['date'].split(' ')[0]}  --|--  👤 {row['_source']['sender']['userName']}\n" \
