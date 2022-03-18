@@ -16,6 +16,8 @@ import pickle
 from functions.glue import get_config, get_es
 import telethon
 from functions.login import get_bot
+import prettytable
+import math
 
 async def format_message(msg):
     if not msg.text or msg.media:
@@ -49,13 +51,14 @@ def update_latest_msg_id(config):
 
 async def save_to_es(msg):
     es = get_es()
+    config = get_config()
 
     doc_data = await format_message(msg)
 
     if not doc_data:
         return 
 
-    es.index(index="telegram", document=doc_data)
+    es.index(index=config["es"]["index"], document=doc_data)
 
     # save latest msg id
     with open("./latest_id.json", "w") as f:
@@ -67,7 +70,66 @@ async def save_to_es(msg):
 
 async def search_with_keyword(msg):
     bot = get_bot()
+    es = get_es()
+    config = get_config()
+
+    query = {
+        "match": {
+            "text": "".join(msg.text.split(' ')[1:])
+        }
+    }
+
+
+    res = es.search(index=config["es"]["index"], from_=0, size=config["params"]["search"]["step"], query=query)
+
+    # no hit
+    if res.body["hits"]["total"]["value"] == 0:
+        await bot.send_message(msg.chat, f"👋🏼No match for {''.join(msg.text.split(' ')[1:])}", reply_to=msg)
+        return 
+    # print(res.body)
+
+    pretty_res = prettified_res(res=res, keyword="".join(msg.text.split(' ')[1:]))
+
+    # print(pretty_res)
 
     btn = telethon.Button.inline("Page-2")
 
-    await bot.send_message(msg.chat, "aaaaa", reply_to=msg, buttons=btn)
+    await bot.send_message(msg.chat, pretty_res, reply_to=msg, buttons=btn)
+
+
+    # btn = telethon.Button.inline("Page-2")
+
+    # await bot.send_message(msg.chat, "aaaaa", reply_to=msg, buttons=btn)
+
+
+def prettified_res(res, keyword, page=1):
+    config = get_config()
+    table = prettytable.PrettyTable()
+
+    table.field_names = [
+        "⏰Date",
+        "👤Sender",
+        "🔊Text",
+        # "Chat"
+    ]
+
+    table.align["Text"] = "l"
+
+    # calculate total page: total_hits/step
+    total_page = math.ceil(res.body["hits"]["total"]["value"]/config["params"]["search"]["step"])
+
+    # table.add_row(("2022-03-18", "aSigma", "哈哈哈", "111"))
+    for row in res.body["hits"]["hits"]:
+        table.add_row((
+            row["_source"]["date"].split(" ")[0],
+            row["_source"]["sender"]["userName"],
+            # row["_source"]["text"],
+            f"[{row['_source']['text']}](https://t.me/nbb_love_tanaka/{row['_source']['id']})"
+            # row["_source"]["chat"]
+        ))
+
+    prety_res = f"📝Total page: {total_page}\n" \
+          f"👀Page-{page} for keyword: **{keyword}**\n" \
+          f"{table}" 
+
+    return prety_res

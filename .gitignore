@@ -2,7 +2,9 @@ config.yaml
 */__pycache__
 bot.session
 bot*
+*.session
 deve*
 sources.list
 *.tar.gz
 __pycache__
+*.json

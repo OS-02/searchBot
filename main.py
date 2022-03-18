@@ -14,6 +14,7 @@ from audioop import lin2adpcm
 from distutils.command.clean import clean
 import logging
 from re import T
+import telethon
 import yaml
 
 # Set parameters
@@ -31,7 +32,7 @@ import re
 
 parser = ArgumentParser()
 
-parser.add_argument("--config", "-c", default="a-bot/config.yaml", help="Configeration file")
+parser.add_argument("--config", "-c", default="search-bot/config.yaml", help="Configeration file")
 
 args = parser.parse_args()
 
@@ -54,7 +55,7 @@ async def main():
     init_es(config)
 
     # get history until config['oldest'], need to login as Chaos
-    # await load_history()
+    await load_history()
 
     # login the bot account
     login(config=config)

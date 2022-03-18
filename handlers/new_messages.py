@@ -18,10 +18,13 @@ async def new_message_handler(event):
     message = event.message
     
     if message.text.startswith("/start"):
-        await message.reply("System all Good!")
+        await message.reply("🤖System all Good!")
     elif message.text.startswith("/search"):
         # Main search method
-        await search_with_keyword(msg=message)
+        if "".join(message.text.split(" ")[1:]):
+            await search_with_keyword(msg=message)
+        else:
+            await message.reply("😗Please at least give me one keyword.")
     else:
         if message.is_group:
             # save into es
