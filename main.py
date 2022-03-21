@@ -32,7 +32,7 @@ import re
 
 parser = ArgumentParser()
 
-parser.add_argument("--config", "-c", default="search-bot/config.yaml", help="Configeration file")
+parser.add_argument("--config", "-c", default="config.yaml", help="Configeration file")
 
 args = parser.parse_args()
 
