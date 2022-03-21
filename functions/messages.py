@@ -59,7 +59,12 @@ async def save_to_es(msg):
     if not doc_data:
         return 
 
-    es.index(index=config["es"]["index"], document=doc_data)
+    while True:
+        try:
+            es.index(index=config["es"]["index"], document=doc_data)
+            break
+        except Exception as e:
+            logging.error(f"Due to {e}, cannot save into es, retrying...")
 
     # save latest msg id
     if not os.path.exists("././latest_id.json"):
