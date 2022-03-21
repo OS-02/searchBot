@@ -12,6 +12,7 @@ Software:      Vscode
 from asyncio.log import logger
 import json
 import logging
+import os
 import pickle
 from functions.glue import get_config, get_es
 import telethon
@@ -61,10 +62,21 @@ async def save_to_es(msg):
     es.index(index=config["es"]["index"], document=doc_data)
 
     # save latest msg id
-    with open("./latest_id.json", "w") as f:
-        json.dump(
-            {doc_data["chat_id"]: doc_data["id"]}, f
-        )
+    if not os.path.exists("././latest_id.json"):
+        with open("./latest_id.json", "w") as f:
+            json.dump(
+                {doc_data["chat_id"]: doc_data["id"]}, f
+            )
+    else:
+        with open("./latest_id.json", "r+") as f:
+            latest = json.loads(f.readlines()[0])
+            config["params"]["history"]["min_id"] = latest[f'{doc_data["chat_id"]}']
+            if config["params"]["history"]["min_id"] < doc_data["id"]:
+                f.seek(0)
+                f.truncate(0)
+                json.dump(
+                    {doc_data["chat_id"]: doc_data["id"]}, f
+                )
 
     logging.info(f"Saving Successfully: {doc_data['chat']} - {doc_data['id']} - {doc_data['date']}")
 
